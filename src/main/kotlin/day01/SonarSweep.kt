@@ -4,23 +4,22 @@ import utils.readInputLines
 
 class SonarSweep {
 
-    fun findIncrements(depths: List<String>): Int {
-        return depths.map(String::toInt)
+    fun findIncrements(depths: List<String>) =
+        depths.map(String::toInt)
             .zipWithNext()
             .fold(0) { acc, (curr, next) ->
                 acc + if (next > curr) 1 else 0
             }
-    }
 
-    fun findIncrementsWithWindow(depths: List<String>, windowSize: Int): Int {
-        return depths.map(String::toInt)
-            .windowed(windowSize + 1)
-            .fold(0) { acc, measurements ->
-                val window1 = measurements.subList(0, windowSize)
-                val window2 = measurements.subList(1, measurements.size)
-                acc + if (window2.sum() > window1.sum()) 1 else 0
+    fun findIncrementsWithWindow(depths: List<String>, windowSize: Int) =
+        depths.asSequence()
+            .map(String::toInt)
+            .windowed(windowSize)
+            .map(List<Int>::sum)
+            .zipWithNext()
+            .fold(0) { acc, (window1Sum, window2Sum) ->
+                acc + if (window2Sum > window1Sum) 1 else 0
             }
-    }
 }
 
 fun main() {

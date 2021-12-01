@@ -2,10 +2,13 @@ package day01
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import utils.readInputLines
 
 class SonarSweepTest {
 
-	@Test
+    private val sonarSweep = SonarSweep()
+
+    @Test
     fun `should find total depth increases`() {
         val input = """199
 200
@@ -17,7 +20,13 @@ class SonarSweepTest {
 269
 260
 263""".lines()
-        assertThat(SonarSweep().findIncrements(input)).isEqualTo(7)
+        assertThat(sonarSweep.findIncrements(input)).isEqualTo(7)
+    }
+
+    @Test
+    fun `should produce the right answer for part 1`() {
+        val input = readInputLines(1)
+        assertThat(sonarSweep.findIncrements(input)).isEqualTo(1392)
     }
 
     @Test
@@ -32,6 +41,12 @@ class SonarSweepTest {
 269
 260
 263""".lines()
-        assertThat(SonarSweep().findIncrementsWithWindow(input, 3)).isEqualTo(5)
+        assertThat(sonarSweep.findIncrementsWithWindow(input, 3)).isEqualTo(5)
+    }
+
+    @Test
+    fun `should produce correct answer for part 2`() {
+        val input = readInputLines(1)
+        assertThat(sonarSweep.findIncrementsWithWindow(input, 3)).isEqualTo(1359)
     }
 }
