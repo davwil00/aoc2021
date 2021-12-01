@@ -7,9 +7,7 @@ class SonarSweep {
     fun findIncrements(depths: List<String>) =
         depths.map(String::toInt)
             .zipWithNext()
-            .fold(0) { acc, (curr, next) ->
-                acc + if (next > curr) 1 else 0
-            }
+            .count { (curr, next) -> next > curr }
 
     fun findIncrementsWithWindow(depths: List<String>, windowSize: Int) =
         depths.asSequence()
@@ -17,9 +15,7 @@ class SonarSweep {
             .windowed(windowSize)
             .map(List<Int>::sum)
             .zipWithNext()
-            .fold(0) { acc, (window1Sum, window2Sum) ->
-                acc + if (window2Sum > window1Sum) 1 else 0
-            }
+            .count { (window1Sum, window2Sum) -> window2Sum > window1Sum }
 }
 
 fun main() {

@@ -26,7 +26,7 @@ class SonarSweepTest {
     @Test
     fun `should produce the right answer for part 1`() {
         val input = readInputLines(1)
-        assertThat(sonarSweep.findIncrements(input)).isEqualTo(1392)
+        assertThat(sonarSweep.findIncrements(input)).isEqualTo(1393)
     }
 
     @Test
