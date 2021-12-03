@@ -17,21 +17,16 @@ class BinaryDiagnostic {
 
     fun calculatePowerConsumption(bitList: List<String>) = calculateGamma(bitList) * calculateEpsilon(bitList)
 
-    tailrec fun calculateOxygenGeneratorRating(report: List<String>, index: Int = 0): Int {
-        return if (report.size == 1) {
-            report.toDecimal()
-        } else {
-            val significantBit = getSignificantBits(report)[index]
-            calculateOxygenGeneratorRating(report.filter { it[index].toString() == significantBit }, index + 1)
-        }
-    }
+    fun calculateOxygenGeneratorRating(report: List<String>) = calculateRating(report, false)
+    fun calculateCO2ScrubberRating(report: List<String>) = calculateRating(report, true)
 
-    tailrec fun calculateCO2ScrubberRating(report: List<String>, index: Int = 0): Int {
+    private tailrec fun calculateRating(report: List<String>, flip: Boolean, index: Int = 0): Int {
         return if (report.size == 1) {
             report.toDecimal()
         } else {
-            val significantBit = getSignificantBits(report).flipBinary()[index]
-            calculateCO2ScrubberRating(report.filter { it[index].toString() == significantBit }, index + 1)
+            val significantBits = getSignificantBits(report)
+            val significantBit = (if (flip) significantBits.flipBinary() else significantBits)[index]
+            calculateRating(report.filter { it[index].toString() == significantBit }, flip, index + 1)
         }
     }
 
