@@ -7,7 +7,7 @@ class BinaryDiagnostic {
     fun getSignificantBits(report: List<String>): List<String> {
         val bitSize = report.first().length
         return (0 until bitSize).map { index ->
-            val counts = report.map { it[index].toString() }.groupBy { it } //.maxByOrNull { it.value.size }?.key ?: "1"
+            val counts = report.map { it[index].toString() }.groupBy { it }
             if ((counts["1"]?.size ?: 0) >= (counts["0"]?.size ?: 0)) "1" else "0"
         }
     }
@@ -32,8 +32,8 @@ class BinaryDiagnostic {
 
     fun calculateLifeSupportRating(report: List<String>) = calculateOxygenGeneratorRating(report) * calculateCO2ScrubberRating(report)
 
-    private fun List<Any>.toDecimal() = this.joinToString("") { it.toString() }.toInt(2)
-    private fun List<String>.flipBinary() = this.map { if (it == "1") "0" else "1" }
+    private fun List<String>.toDecimal() = this.joinToString("") { it }.toInt(2)
+    private fun List<String>.flipBinary() = this.map { it.toInt(2).xor(1).toString() }
 }
 
 fun main() {

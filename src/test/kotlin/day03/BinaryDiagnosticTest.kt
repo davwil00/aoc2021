@@ -8,7 +8,7 @@ class BinaryDiagnosticTest {
 
     private val binaryDiagnostic = BinaryDiagnostic()
 
-    val testInput = """00100
+    private val testInput = """00100
 11110
 10110
 10111
