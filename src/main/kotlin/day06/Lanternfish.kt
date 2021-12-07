@@ -14,7 +14,7 @@ fun simulateDays(days: Int, lanternfish: Map<Int, Long>): Long {
     var mapCopy = lanternfish.toMutableMap()
     repeat(days) {
         val newMap = mutableMapOf<Int, Long>()
-        mapCopy.forEach { timer, count ->
+        mapCopy.forEach { (timer, count) ->
             when (timer) {
                 0 -> {
                     newMap.merge(6, count) { a, b -> a + b }
