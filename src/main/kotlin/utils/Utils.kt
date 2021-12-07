@@ -10,3 +10,7 @@ fun readInput(day: Int) : String {
 fun readInputLines(day: Int) : List<String> {
     return readInput(day).lines()
 }
+
+fun readSingleInputLineOfIntsFromCsv(day: Int): List<Int> {
+    return readInput(day).split(",").map { it.toInt() }
+}
