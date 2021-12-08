@@ -2,6 +2,7 @@ package day07
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import utils.readInputLines
 import utils.readSingleInputLineOfIntsFromCsv
 
 class TheTreacheryOfWhalesTest {
@@ -16,7 +17,7 @@ class TheTreacheryOfWhalesTest {
 
 	@Test
     fun `should find the horizontal position that uses the least fuel for all crabs`() {
-        assertThat(theTreacheryOfWhales.findCheapestFuelCost(testInput)).isEqualTo(333755)
+        assertThat(theTreacheryOfWhales.findCheapestFuelCost(readSingleInputLineOfIntsFromCsv(7))).isEqualTo(333755)
     }
 
     @Test
