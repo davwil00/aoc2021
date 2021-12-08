@@ -12,3 +12,4 @@ inline fun <T> Iterable<T>.takeWhileInclusive(predicate: (T) -> Boolean): List<T
 fun String.containsAll(other: String) = this.split("").containsAll(other.split(""))
 fun String.equalsIgnoringOrder(other: String) = this.toList().sorted() == other.toList().sorted()
 fun String.splitToString() = this.chunked(1)
+fun String.unique() = this.splitToString().toSet().joinToString("")

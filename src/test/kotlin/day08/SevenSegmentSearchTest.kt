@@ -2,6 +2,7 @@ package day08
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import utils.readInputLines
 
 class SevenSegmentSearchTest {
 
@@ -25,6 +26,12 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     }
 
     @Test
+    fun `should count all instances of digits that have unique numbers of segments in full input`() {
+        val observations = sevenSegmentSearch.parseInput(readInputLines(8))
+        assertThat(sevenSegmentSearch.countSegmentsWithKnownSizes(observations)).isEqualTo(310)
+    }
+
+    @Test
     fun `should decode output digits for input`() {
         val testObservation = SevenSegmentSearch.Observation(listOf("acedgfb", "cdfbe", "gcdfa", "fbcad", "dab", "cefabd", "cdfgeb", "eafb", "cagedb", "ab"), listOf("cdfeb", "fcadb", "cdfeb", "cdbaf"))
         assertThat(sevenSegmentSearch.findOutputValue(testObservation)).isEqualTo(5353)
@@ -34,5 +41,11 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     fun `should sum output digits`() {
         val observations = sevenSegmentSearch.parseInput(testInput)
         assertThat(sevenSegmentSearch.deriveMappings(observations)).isEqualTo(61229)
+    }
+
+    @Test
+    fun `should sum output digits for full input`() {
+        val observations = sevenSegmentSearch.parseInput(readInputLines(8))
+        assertThat(sevenSegmentSearch.deriveMappings(observations)).isEqualTo(915941)
     }
 }
