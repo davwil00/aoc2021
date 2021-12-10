@@ -26,7 +26,7 @@ class HydrothermalVentureTest {
 
 	@ParameterizedTest
     @MethodSource("expandCoordinateRangeSource")
-    fun `expandCoordinateRange correctly provides all coordinates`(coordinateRange: CoordinateRange, expected: List<Coordinate<Int>>) {
+    fun `expandCoordinateRange correctly provides all coordinates`(coordinateRange: CoordinateRange, expected: List<Coordinate>) {
         val actual = hydrothermalVenture.expandCoordinateRange(coordinateRange)
         assertThat(actual).containsExactlyInAnyOrder(*expected.toTypedArray())
     }

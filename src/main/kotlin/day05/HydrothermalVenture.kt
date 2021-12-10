@@ -15,7 +15,7 @@ class HydrothermalVenture {
         }
     }
 
-    private fun mapHorizontalVerticalVents(ventLocations: List<CoordinateRange>, includeDiagonals: Boolean): Map<Coordinate<Int>, Int> {
+    private fun mapHorizontalVerticalVents(ventLocations: List<CoordinateRange>, includeDiagonals: Boolean): Map<Coordinate, Int> {
         return ventLocations
             .filter { if (includeDiagonals) true else (!isDiagonal(it)) }
             .flatMap { expandCoordinateRange(it) }
@@ -30,7 +30,7 @@ class HydrothermalVenture {
         return mapHorizontalVerticalVents.values.count { it > 1 }
     }
 
-    fun expandCoordinateRange(range: CoordinateRange): List<Coordinate<Int>> {
+    fun expandCoordinateRange(range: CoordinateRange): List<Coordinate> {
         val (x1, y1) = range.first
         val (x2, y2) = range.second
         val minX = min(x1, x2)
@@ -59,7 +59,7 @@ class HydrothermalVenture {
     }
 }
 
-typealias CoordinateRange = Pair<Coordinate<Int>, Coordinate<Int>>
+typealias CoordinateRange = Pair<Coordinate, Coordinate>
 
 fun main() {
     val input = readInputLines(5)
