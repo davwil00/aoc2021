@@ -1,5 +1,6 @@
 package day10
 
+import day10.SyntaxScoring.ChunkChars.Companion.isOpening
 import utils.readInputLines
 
 class SyntaxScoring {
@@ -14,14 +15,10 @@ class SyntaxScoring {
         val corruptedChunks = chunks.map(::validateChunk)
             .filter { it.valid }
 
-        val totals = mutableListOf<Long>()
-        for (chunk in corruptedChunks) {
-            var total = 0L
-            for (remainingChar in chunk.remainingChars.reversed()) {
-                total *= 5
-                total += remainingChar.autocompletePoints
+        val totals = corruptedChunks.map { chunk ->
+            chunk.remainingChars.reversed().fold(0L) {
+                total, remainingChar -> total * 5 + remainingChar.autocompletePoints
             }
-            totals.add(total)
         }
 
         return totals.sorted()[totals.size / 2]
@@ -30,7 +27,7 @@ class SyntaxScoring {
     fun validateChunk(chunk: String): ValidationResult {
         val openedChunks = mutableListOf<ChunkChars>()
         for (char in chunk) {
-            if (char.isOpening()) {
+            if (isOpening(char)) {
                 openedChunks.add(ChunkChars.fromOpeningChar(char))
             } else if (char == openedChunks.last().closing) {
                 openedChunks.removeLast()
@@ -46,9 +43,6 @@ class SyntaxScoring {
         constructor(valid: Boolean, remainingChars: List<ChunkChars>): this(valid, null, remainingChars)
     }
 
-    fun Char.isOpening() = this == '(' || this == '[' || this == '<' || this == '{'
-    fun Char.isClosing() = this == ')' || this == ']' || this == '>' || this == '}'
-
     enum class ChunkChars(val opening: Char, val closing: Char, val syntaxPoints: Long, val autocompletePoints: Long) {
         BRACKET('(', ')', 3, 1),
         SQUARE_BRACKET('[', ']', 57, 2),
@@ -58,6 +52,7 @@ class SyntaxScoring {
         companion object {
             fun fromOpeningChar(openingChar: Char) = values().first { it.opening == openingChar }
             fun fromClosingChar(closingChar: Char) = values().first { it.closing == closingChar }
+            fun isOpening(char: Char) = values().any { it.opening == char }
         }
     }
 }
