@@ -13,5 +13,6 @@ fun String.containsAll(other: String) = this.split("").containsAll(other.split("
 fun String.equalsIgnoringOrder(other: String) = this.toList().sorted() == other.toList().sorted()
 fun String.splitToString() = this.chunked(1)
 fun String.unique() = this.splitToString().toSet().joinToString("")
+fun String.isLowercase() = this == this.lowercase()
 
 fun List<Long>.product() = this.reduce(Long::times)
