@@ -2,6 +2,8 @@ package day14
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import utils.readInputLines
 
 class ExtendedPolymerizationTest {
@@ -26,33 +28,23 @@ BC -> B
 CC -> N
 CN -> C""".lines()
 
-	@Test
-    fun `should find difference between max and min polymer count`() {
+	@ParameterizedTest
+    @CsvSource(
+        "10,1588",
+        "40,2188189693529"
+    )
+    fun `should find difference between max and min polymer count for {0} iterations`(iterations: Int, expected: Long) {
         val manualData = extendedPolymerization.parseInput(testInput)
-        assertThat(extendedPolymerization.findOptimalFormula(manualData, 10)).isEqualTo(1588)
+        assertThat(extendedPolymerization.findOptimalFormula(manualData, iterations)).isEqualTo(expected)
     }
 
-	@Test
-    fun `should find difference between max and min polymer count2`() {
-        val manualData = extendedPolymerization.parseInput(testInput)
-        assertThat(extendedPolymerization.findOptimalFormula(manualData, 10)).isEqualTo(1588)
-    }
-
-	@Test
-    fun `should find difference between max and min polymer count2 40`() {
-        val manualData = extendedPolymerization.parseInput(testInput)
-        assertThat(extendedPolymerization.findOptimalFormula(manualData, 40)).isEqualTo(2188189693529)
-    }
-
-	@Test
-    fun `should find difference between max and min polymer count for full input`() {
+    @ParameterizedTest
+    @CsvSource(
+        "10,2712",
+        "40,8336623059567"
+    )
+    fun `should find difference between max and min polymer count for full input and {0} iterations`(iterations: Int, expected: Long) {
         val manualData = extendedPolymerization.parseInput(readInputLines(14))
-        assertThat(extendedPolymerization.findOptimalFormula(manualData, 10)).isEqualTo(2712)
-    }
-
-	@Test
-    fun `should find difference between max and min polymer count for full input2`() {
-        val manualData = extendedPolymerization.parseInput(readInputLines(14))
-        assertThat(extendedPolymerization.findOptimalFormula(manualData, 10)).isEqualTo(2712)
+        assertThat(extendedPolymerization.findOptimalFormula(manualData, iterations)).isEqualTo(expected)
     }
 }

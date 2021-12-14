@@ -65,7 +65,7 @@ fun main() {
     val extendedPolymerization = ExtendedPolymerization()
     val manualData = extendedPolymerization.parseInput(input)
     val part1 = extendedPolymerization.findOptimalFormula(manualData, 10)
-    println("Part1: $part1")
+    println("After 10 iterations: $part1")
     val part2 = extendedPolymerization.findOptimalFormula(manualData, 40)
-    println("Part2: $part2") // 7155869758393
+    println("After 40 iterations: $part2")
 }
