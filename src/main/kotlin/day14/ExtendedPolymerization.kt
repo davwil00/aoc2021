@@ -44,7 +44,9 @@ class ExtendedPolymerization {
             .splitToString()
             .zipWithNext()
             .map { (first, second) -> first + second}
-            .associateWith { 1L }
+            .groupingBy { it }
+            .eachCount()
+            .mapValues { e -> e.value.toLong() }
 
         val x = findOptimalFormulaRecursively(initialMap, manualData.insertionRules, numberOfSteps)
         val chars = x.keys.flatMap { it.splitToString() }.distinct()
