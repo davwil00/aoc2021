@@ -56,7 +56,7 @@ class PacketDecoderTest {
         "C0015000016115A2E0802F182340,23",
         "A0016C880162017C3686B18A3D4780,31"
     )
-    fun `getPacketSum`(testInput: String, expectedSum: Int) {
+    fun getPacketSum(testInput: String, expectedSum: Int) {
         val binInput = packetDecoder.convertInputToBinary(testInput)
         val packet = readPacket(binInput)
         assertThat(packet.getVersionSum()).isEqualTo(expectedSum)
@@ -64,8 +64,32 @@ class PacketDecoderTest {
 
     @Test
     fun `getPacketSum for full input`() {
-        val binInput = packetDecoder.convertInputToBinary(readInput(15))
+        val binInput = packetDecoder.convertInputToBinary(readInput(16))
         val packet = readPacket(binInput)
         assertThat(packet.getVersionSum()).isEqualTo(886)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "C200B40A82,3",
+        "04005AC33890,54",
+        "880086C3E88112,7",
+        "CE00C43D881120,9",
+        "D8005AC2A8F0,1",
+        "F600BC2D8F,0",
+        "9C005AC2F8F0,0",
+        "9C0141080250320F1802104A08,1"
+    )
+    fun getValue(input: String, expected: Long) {
+        val binInput = packetDecoder.convertInputToBinary(input)
+        val packet = readPacket(binInput)
+        assertThat(packet.value).isEqualTo(expected)
+    }
+
+    @Test
+    fun `getValue for full input`() {
+        val binInput = packetDecoder.convertInputToBinary(readInput(16))
+        val packet = readPacket(binInput)
+        assertThat(packet.value).isEqualTo(184487454837)
     }
 }

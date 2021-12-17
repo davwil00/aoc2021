@@ -1,5 +1,6 @@
 package day16
 
+import utils.productOf
 import utils.readInput
 import utils.splitToString
 import java.util.*
@@ -14,8 +15,10 @@ class PacketDecoder {
 
     private fun hexToBin(hex: Char) = hex.digitToInt(16).toString(2).padStart(4, '0')
 
-    abstract class Packet(val version: Int, typeID: Int, packetBody: PacketBody) {
+    abstract class Packet(val version: Int) {
         abstract fun getVersionSum(): Int
+
+        abstract val value: Long
 
         companion object {
             fun readPacket(packetString: PacketBody): Packet {
@@ -23,15 +26,22 @@ class PacketDecoder {
                 val typeID = packetString.takeBinToInt(3)
 
                 return when (typeID) {
-                    4 -> LiteralPacket(version, typeID, packetString)
-                    else -> OperatorPacket(version, typeID, packetString)
+                    0 -> SumPacket(version, packetString)
+                    1 -> ProductPacket(version, packetString)
+                    2 -> MinimumPacket(version, packetString)
+                    3 -> MaximumPacket(version, packetString)
+                    4 -> LiteralPacket(version, packetString)
+                    5 -> GreaterThanPacket(version, packetString)
+                    6 -> LessThanPacket(version, packetString)
+                    7 -> EqualToPacket(version, packetString)
+                    else -> throw IllegalArgumentException("Unknown type ID $typeID")
                 }
             }
         }
     }
 
-    class LiteralPacket(version: Int, typeId: Int, packetBody: PacketBody): Packet(version, typeId, packetBody) {
-        val value: Long
+    class LiteralPacket(version: Int, packetBody: PacketBody): Packet(version) {
+        override val value: Long
 
         init {
             with(StringBuilder()) {
@@ -49,7 +59,7 @@ class PacketDecoder {
         }
     }
 
-    class OperatorPacket(version: Int, typeID: Int, packetBody: PacketBody): Packet(version, typeID, packetBody) {
+    abstract class OperatorPacket(version: Int, packetBody: PacketBody): Packet(version) {
         val packets: List<Packet>
 
         init {
@@ -82,6 +92,40 @@ class PacketDecoder {
         }
     }
 
+    class SumPacket(version: Int, packetBody: PacketBody): OperatorPacket(version, packetBody) {
+        override val value: Long
+            get() = packets.sumOf { it.value }
+    }
+
+    class ProductPacket(version: Int, packetBody: PacketBody): OperatorPacket(version, packetBody) {
+        override val value: Long
+            get() = packets.productOf { it.value }
+    }
+
+    class MinimumPacket(version: Int, packetBody: PacketBody): OperatorPacket(version, packetBody) {
+        override val value: Long
+            get() = packets.minOf { it.value }
+    }
+
+    class MaximumPacket(version: Int, packetBody: PacketBody): OperatorPacket(version, packetBody) {
+        override val value: Long
+            get() = packets.maxOf { it.value }
+    }
+
+    class GreaterThanPacket(version: Int, packetBody: PacketBody): OperatorPacket(version, packetBody) {
+        override val value: Long
+            get() = if (packets[0].value > packets[1].value) 1 else 0
+    }
+
+    class LessThanPacket(version: Int, packetBody: PacketBody): OperatorPacket(version, packetBody) {
+        override val value: Long
+            get() = if (packets[0].value < packets[1].value) 1 else 0
+    }
+
+    class EqualToPacket(version: Int, packetBody: PacketBody): OperatorPacket(version, packetBody) {
+        override val value: Long
+            get() = if (packets[0].value == packets[1].value) 1 else 0
+    }
 }
 
 typealias PacketBody = LinkedList<String>
@@ -93,6 +137,9 @@ fun main() {
     val input = readInput(16)
     val packetDecoder = PacketDecoder()
     val binInput = packetDecoder.convertInputToBinary(input)
-    val versionSum = PacketDecoder.Packet.readPacket(binInput).getVersionSum()
+    val packet = PacketDecoder.Packet.readPacket(binInput)
+    val versionSum = packet.getVersionSum()
     println(versionSum)
+    val value = packet.value
+    println(value)
 }

@@ -15,6 +15,6 @@ fun String.splitToString() = this.chunked(1)
 fun String.unique() = this.splitToString().toSet().joinToString("")
 fun String.isLowercase() = this == this.lowercase()
 
-fun List<Long>.product() = this.reduce(Long::times)
-
+fun Iterable<Long>.product() = this.reduce(Long::times)
+fun <T> Iterable<T>.productOf(selector: (T) -> Long): Long = this.map(selector).product()
 fun <T, U> Grouping<T, U>.eachCountToLong() = this.fold(0L) { acc, _ -> acc + 1 }
