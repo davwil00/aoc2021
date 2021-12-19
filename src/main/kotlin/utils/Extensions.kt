@@ -14,6 +14,7 @@ fun String.equalsIgnoringOrder(other: String) = this.toList().sorted() == other.
 fun String.splitToString() = this.chunked(1)
 fun String.unique() = this.splitToString().toSet().joinToString("")
 fun String.isLowercase() = this == this.lowercase()
+fun String.isDigit() = this.all { it.isDigit() }
 
 fun Iterable<Long>.product() = this.reduce(Long::times)
 fun <T> Iterable<T>.productOf(selector: (T) -> Long): Long = this.map(selector).product()
