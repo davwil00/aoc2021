@@ -16,5 +16,5 @@ data class Coordinate(val x: Int, val y: Int) {
         Coordinate(this.x + 1, this.y - 1),
         Coordinate(this.x + 1, this.y + 1),
         Coordinate(this.x - 1, this.y + 1)
-    ).filter { it.x >= minX && it.y >= minY } + getAdjacentCoordinates()
+    ).filter { it.x >= minX && it.y >= minY } + getAdjacentCoordinates(minX, minY)
 }

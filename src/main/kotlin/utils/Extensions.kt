@@ -19,3 +19,5 @@ fun String.isDigit() = this.all { it.isDigit() }
 fun Iterable<Long>.product() = this.reduce(Long::times)
 fun <T> Iterable<T>.productOf(selector: (T) -> Long): Long = this.map(selector).product()
 fun <T, U> Grouping<T, U>.eachCountToLong() = this.fold(0L) { acc, _ -> acc + 1 }
+
+fun Int.isEven() = this % 2 == 0
