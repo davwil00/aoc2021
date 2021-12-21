@@ -21,3 +21,5 @@ fun <T> Iterable<T>.productOf(selector: (T) -> Long): Long = this.map(selector).
 fun <T, U> Grouping<T, U>.eachCountToLong() = this.fold(0L) { acc, _ -> acc + 1 }
 
 fun Int.isEven() = this % 2 == 0
+
+fun Char.asInt() = this.toString().toInt()
