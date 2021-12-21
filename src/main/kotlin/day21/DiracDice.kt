@@ -1,7 +1,6 @@
 package day21
 
 import utils.asInt
-import utils.eachCountToLong
 import utils.readInputLines
 import kotlin.math.max
 
@@ -31,22 +30,17 @@ class DiracDice {
 
     fun playGame(players: List<Player>): Long {
         val dice = DiracDice()
-        // Map of score, current position -> number of players
         var player1Wins = 0L
         var player2Wins = 0L
-
         var gameStates = mapOf(GameState(players[0], players[1]) to 1L)
 
-        // 729 states per turn
-
         while (gameStates.isNotEmpty()) {
-            // generate player 1 moves
             gameStates = gameStates.flatMap { (gameState, count) ->
-                dice.getSumOfThreeDiceRolls().mapNotNull { player1Dice ->
+                dice.getSumOfThreeDiceRolls().flatMap { player1Dice ->
                     val player1 = gameState.p1.copy().haveTurn(player1Dice)
                     if (player1.hasWon(21)) {
                         player1Wins += count
-                        null
+                        emptyList()
                     } else {
                         dice.getSumOfThreeDiceRolls().mapNotNull { player2Dice ->
                             val player2 = gameState.p2.copy().haveTurn(player2Dice)
@@ -54,12 +48,12 @@ class DiracDice {
                                 player2Wins += count
                                 null
                             } else {
-                                GameState(player1.copy(), player2.copy())
+                                Pair(GameState(player1.copy(), player2.copy()), count)
                             }
                         }
                     }
                 }
-            }.flatten().groupingBy { it }.eachCountToLong()
+            }.groupingBy { it.first }.fold(0L) { acc, (_, count) -> acc + count }
         }
 
         return max(player1Wins, player2Wins)
@@ -106,9 +100,14 @@ class DiracDice {
 
     class DiracDice {
         fun getSumOfThreeDiceRolls(): List<Int> {
-            return listOf(
-                3, 4,
-                5, 5, 5, 5, 5, 5, 5, 5, //8
+            return diceRolls
+        }
+
+        companion object {
+            private val diceRolls = listOf(
+                3,
+                4, 4, 4,
+                5, 5, 5, 5, 5, 5, //6
                 6, 6, 6, 6, 6, 6, 6, //7
                 7, 7, 7, 7, 7, 7, //6
                 8, 8, 8,
@@ -121,7 +120,8 @@ class DiracDice {
 fun main() {
     val input = readInputLines(21)
     val diracDice = DiracDice()
-    val players = diracDice.getStartingPositions(input)
-    val result = diracDice.playPracticeGame(players)
-    println("result: $result")
+    val practiceGameResult = diracDice.playPracticeGame(diracDice.getStartingPositions(input))
+    println("Losing player score * dice rolls in practice game: $practiceGameResult")
+    val realGameResult = diracDice.playGame(diracDice.getStartingPositions(input))
+    println("Winning player wins in $realGameResult universes")
 }
