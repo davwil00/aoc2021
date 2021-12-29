@@ -1,28 +1,30 @@
-package day15
+package utils
 
 // version 1.1.51
 // Adapted from https://rosettacode.org/wiki/Dijkstra%27s_algorithm#Kotlin
 import java.util.TreeSet
 
-class Edge(val v1: String, val v2: String, val dist: Int)
+class Edge<T: Comparable<T>>(val v1: T, val v2: T, val dist: Int) {
+    override fun toString(): String {
+        return "$v1 -> $v2 = $dist"
+    }
+}
 
 /** One vertex of the graph, complete with mappings to neighbouring vertices */
-class Vertex(val name: String) : Comparable<Vertex> {
+class Vertex<T: Comparable<T>>(private val name: T) : Comparable<Vertex<T>> {
 
     var dist = Int.MAX_VALUE  // MAX_VALUE assumed to be infinity
-    var previous: Vertex? = null
-    val neighbours = HashMap<Vertex, Int>()
+    var previous: Vertex<T>? = null
+    val neighbours = HashMap<Vertex<T>, Int>()
 
     fun printPath() {
-        if (this == previous) {
-            print(name)
-        }
-        else if (previous == null) {
-            print("$name(unreached)")
-        }
-        else {
-            previous!!.printPath()
-            print(" -> $name($dist)")
+        when (previous) {
+            this -> println(name)
+            null -> print("$name(unreached)")
+            else -> {
+                previous!!.printPath()
+                print(" -> \n$name\n($dist)")
+            }
         }
     }
 
@@ -30,45 +32,48 @@ class Vertex(val name: String) : Comparable<Vertex> {
         return dist
     }
 
-    override fun compareTo(other: Vertex): Int {
-        if (dist == other.dist) return name.compareTo(other.name)
+    override fun compareTo(other: Vertex<T>): Int {
+        if (dist == other.dist) {
+            return name.compareTo(other.name)
+        }
         return dist.compareTo(other.dist)
     }
 
     override fun toString() = "($name, $dist)"
 }
 
-class Graph(
-    val edges: List<Edge>,
-    val directed: Boolean,
-    val showAllPaths: Boolean = false
+class Graph<T: Comparable<T>> (
+    edges: List<Edge<T>>,
+    private val directed: Boolean,
+    private val showAllPaths: Boolean = false
 ) {
     // mapping of vertex names to Vertex objects, built from a set of Edges
-    private val graph = HashMap<String, Vertex>(edges.size)
+    private val graph = HashMap<T, Vertex<T>>(edges.size)
 
     init {
         // one pass to find all vertices
         for (e in edges) {
-            if (!graph.containsKey(e.v1)) graph.put(e.v1, Vertex(e.v1))
-            if (!graph.containsKey(e.v2)) graph.put(e.v2, Vertex(e.v2))
+            graph.putIfAbsent(e.v1, Vertex(e.v1))
+            graph.putIfAbsent(e.v2, Vertex(e.v2))
         }
 
         // another pass to set neighbouring vertices
         for (e in edges) {
-            graph[e.v1]!!.neighbours.put(graph[e.v2]!!, e.dist)
+            graph.getValue(e.v1).neighbours[graph.getValue(e.v2)] = e.dist
             // also do this for an undirected graph if applicable
-            if (!directed) graph[e.v2]!!.neighbours.put(graph[e.v1]!!, e.dist)
+            if (!directed) {
+                graph.getValue(e.v2).neighbours[graph.getValue(e.v1)] = e.dist
+            }
         }
     }
 
     /** Runs dijkstra using a specified source vertex */
-    fun dijkstra(startName: String) {
-        if (!graph.containsKey(startName)) {
-            println("Graph doesn't contain start vertex '$startName'")
-            return
+    fun dijkstra(startName: T) {
+        if (startName !in graph) {
+            throw IllegalStateException("Graph doesn't contain start vertex '$startName'")
         }
         val source = graph[startName]
-        val q = TreeSet<Vertex>()
+        val q = TreeSet<Vertex<T>>()
 
         // set-up vertices
         for (v in graph.values) {
@@ -81,10 +86,10 @@ class Graph(
     }
 
     /** Implementation of dijkstra's algorithm using a binary heap */
-    private fun dijkstra(q: TreeSet<Vertex>) {
+    private fun dijkstra(q: TreeSet<Vertex<T>>) {
         while (!q.isEmpty()) {
-            // vertex with shortest distance (first iteration will return source)
-            val u = q.pollFirst()
+            // vertex with the shortest distance (first iteration will return source)
+            val u = q.pollFirst()!!
             // if distance is infinite we can ignore 'u' (and any other remaining vertices)
             // since they are unreachable
             if (u.dist == Int.MAX_VALUE) break
@@ -105,18 +110,21 @@ class Graph(
     }
 
     /** Prints a path from the source to the specified vertex */
-    fun printPath(endName: String) {
-        if (!graph.containsKey(endName)) {
-            println("Graph doesn't contain end vertex '$endName'")
-            return
+    fun printPath(endName: T) {
+        if (endName !in graph) {
+            throw IllegalStateException("Graph doesn't contain end vertex '$endName'")
         }
-        print(if (directed) "Directed   : " else "Undirected : ")
-        graph[endName]!!.printPath()
+        println(if (directed) "Directed   : " else "Undirected : ")
+        graph.getValue(endName).printPath()
         println()
-        if (showAllPaths) printAllPaths() else println()
+        if (showAllPaths) {
+            printAllPaths()
+        } else {
+            println()
+        }
     }
 
-    fun getWeightToPath(endName: String): Int {
+    fun getWeightToPath(endName: T): Int {
         return graph.getValue(endName).getWeight()
     }
 

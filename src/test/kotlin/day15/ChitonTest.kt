@@ -40,6 +40,6 @@ class ChitonTest {
     @Test
     fun `should find lowest risk path for massive map for full input`() {
         val riskLevelMap = chiton.produceEdgeList(chiton.produceMassiveMapInput(readInputLines(15)))
-        assertThat(chiton.findLowestRiskLevelPath(riskLevelMap, Coordinate(49, 49))).isEqualTo(2885)
+        assertThat(chiton.findLowestRiskLevelPath(riskLevelMap, Coordinate(499, 499))).isEqualTo(2885)
     }
 }

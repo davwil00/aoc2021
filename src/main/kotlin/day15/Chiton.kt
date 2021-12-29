@@ -1,12 +1,10 @@
 package day15
 
-import utils.Coordinate
-import utils.readInputLines
-import utils.splitToString
+import utils.*
 
 class Chiton {
 
-    fun produceEdgeList(input: List<String>): List<Edge> {
+    fun produceEdgeList(input: List<String>): List<Edge<String>> {
         return input.flatMapIndexed { y, row ->
             row.splitToString().flatMapIndexed { x, riskLevel ->
                 val node = Coordinate(x, y)
@@ -36,12 +34,12 @@ class Chiton {
         }
     }
 
-    fun findLowestRiskLevelPath(edges: List<Edge>, endingCoordinate: Coordinate): Int {
+    fun findLowestRiskLevelPath(edges: List<Edge<String>>, endingCoordinate: Coordinate): Int {
         val startingCoordinate = Coordinate(0, 0)
         val graph = Graph(edges, true)
         graph.dijkstra(startingCoordinate.toString())
 
-        graph.printPath(endingCoordinate.toString())
+//        graph.printPath(endingCoordinate.toString())
         return graph.getWeightToPath(endingCoordinate.toString())
     }
 }
