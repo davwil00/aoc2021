@@ -1,22 +1,16 @@
 package day23
 
-import day23.Location.*
 import utils.Edge
 import utils.Graph
 import utils.readInputLines
-import kotlin.collections.Map.Entry
 import kotlin.math.abs
+import kotlin.reflect.KClass
 
 sealed class Amphipod(val char: Char, val energyPerMove: Int) {
-    abstract val id: Int
-    var moves: Int = 0
 
     override fun toString(): String {
-        return "$char$id"
+        return "$char"
     }
-
-    abstract fun getTopRoom(): Location
-    abstract fun getBottomRoom(): Location
 
     override fun equals(other: Any?) = other != null && this::class == other::class
     override fun hashCode(): Int {
@@ -24,96 +18,66 @@ sealed class Amphipod(val char: Char, val energyPerMove: Int) {
     }
 
     companion object {
-        fun fromChar(id: Int, char: Char): Amphipod {
+        fun fromChar(char: Char): Amphipod? {
             return when (char) {
-                'A' -> AmberAmphipod(id)
-                'B' -> BronzeAmphipod(id)
-                'C' -> CopperAmphipod(id)
-                'D' -> DesertAmphipod(id)
+                'A' -> AmberAmphipod()
+                'B' -> BronzeAmphipod()
+                'C' -> CopperAmphipod()
+                'D' -> DesertAmphipod()
+                '.' -> null
                 else -> throw IllegalArgumentException("Unknown Amphipod $char")
             }
         }
     }
 }
 
-class AmberAmphipod(override val id: Int) : Amphipod('A', 1) {
-    override fun getTopRoom() = ROOM_1_TOP
-    override fun getBottomRoom() = ROOM_1_BOTTOM
-}
-class BronzeAmphipod(override val id: Int) : Amphipod('B', 10) {
-    override fun getTopRoom() = ROOM_2_TOP
-    override fun getBottomRoom() = ROOM_2_BOTTOM
-}
-class CopperAmphipod(override val id: Int) : Amphipod('C', 100) {
-    override fun getTopRoom() = ROOM_3_TOP
-    override fun getBottomRoom() = ROOM_3_BOTTOM
-}
-class DesertAmphipod(override val id: Int) : Amphipod('D', 1000) {
-    override fun getTopRoom() = ROOM_4_TOP
-    override fun getBottomRoom() = ROOM_4_BOTTOM
-}
+class AmberAmphipod: Amphipod('A', 1)
+class BronzeAmphipod: Amphipod('B', 10)
+class CopperAmphipod: Amphipod('C', 100)
+class DesertAmphipod: Amphipod('D', 1000)
 
-enum class Location(val index: Int, val isRoom: Boolean) {
-    ROOM_1_TOP(2, true),
-    ROOM_1_BOTTOM(2, true),
-    ROOM_2_TOP(4, true),
-    ROOM_2_BOTTOM(4, true),
-    ROOM_3_TOP(6, true),
-    ROOM_3_BOTTOM(6, true),
-    ROOM_4_TOP(8, true),
-    ROOM_4_BOTTOM(8, true),
-    HALLWAY_0(0, false),
-    HALLWAY_1(1, false),
-    HALLWAY_3(3, false),
-    HALLWAY_5(5, false),
-    HALLWAY_7(7, false),
-    HALLWAY_9(9, false),
-    HALLWAY_10(10, false),
-    ;
-
-    fun getCostToHallway() = when(this) {
-        ROOM_1_TOP, ROOM_2_TOP, ROOM_3_TOP, ROOM_4_TOP -> 1
-        ROOM_1_BOTTOM, ROOM_2_BOTTOM, ROOM_3_BOTTOM, ROOM_4_BOTTOM -> 2
-        else -> 0
-    }
-
-    fun isTop() = when (this) {
-        ROOM_1_TOP, ROOM_2_TOP, ROOM_3_TOP, ROOM_4_TOP -> true
-        else -> false
-    }
-
-    fun isBottom() = !isTop()
-
-    fun getTop() = when(this) {
-        ROOM_1_BOTTOM -> ROOM_1_TOP
-        ROOM_2_BOTTOM -> ROOM_2_TOP
-        ROOM_3_BOTTOM -> ROOM_3_TOP
-        ROOM_4_BOTTOM -> ROOM_4_TOP
-        else -> throw IllegalStateException("Not a bottom room")
-    }
-
-    fun getBottom() = when(this) {
-        ROOM_1_TOP -> ROOM_1_BOTTOM
-        ROOM_2_TOP -> ROOM_2_BOTTOM
-        ROOM_3_TOP -> ROOM_3_BOTTOM
-        ROOM_4_TOP -> ROOM_4_BOTTOM
-        else -> throw IllegalStateException("Not a top room")
-    }
+interface Location {
+    val index: Int
 
     fun getBlockingLocations(destination: Location): List<Location> {
-        return if (destination.index < this.index) {
-            values().filter { !it.isRoom && it.index < this.index && it.index >= destination.index }
+        return if (destination.index < index) {
+            (destination.index until index).map { Hallway(it) }
         } else {
-            values().filter { !it.isRoom && it.index > this.index && it.index <= destination.index }
+            (index + 1 .. destination.index).map { Hallway(it) }
         }
     }
+}
 
-    fun isRoomFor(amphipod: Amphipod?) = when (this) {
-        ROOM_1_TOP, ROOM_1_BOTTOM -> amphipod is AmberAmphipod
-        ROOM_2_TOP, ROOM_2_BOTTOM -> amphipod is BronzeAmphipod
-        ROOM_3_TOP, ROOM_3_BOTTOM -> amphipod is CopperAmphipod
-        ROOM_4_TOP, ROOM_4_BOTTOM -> amphipod is DesertAmphipod
-        else -> false
+data class Room(val roomType: KClass<out Amphipod>, val position: Int): Location {
+
+    override val index = when(roomType) {
+        AmberAmphipod::class -> 2
+        BronzeAmphipod::class -> 4
+        CopperAmphipod::class -> 6
+        DesertAmphipod::class -> 8
+        else -> throw IllegalStateException("Unknown room type")
+    }
+
+    fun getCostToHallway() = position
+
+    fun isTop() = position == 1
+
+    fun getRoomsAbove() = (position - 1 downTo 1)
+        .map { this.copy(position = it) }
+
+    fun getRoomsBelowTo(maxRoomOccupancy: Int) = (position..maxRoomOccupancy)
+        .map { this.copy(position = it) }
+
+    fun isRoomFor(amphipod: Amphipod?) = amphipod != null && roomType == amphipod::class
+
+    override fun toString(): String {
+        return "Room ${index/2} #$position"
+    }
+}
+
+data class Hallway(override val index: Int): Location {
+    companion object {
+        fun getValidPositions() = sequenceOf(0, 1, 3, 5, 7, 9, 10)
     }
 }
 
@@ -125,184 +89,189 @@ class Move(
     fun calculateCost() =
         amphipod.energyPerMove *
                 (abs(location.index - destination.index) +
-                        location.getCostToHallway() +
-                        destination.getCostToHallway())
+                        if (location is Room) location.getCostToHallway() else 0 +
+                        if (destination is Room) destination.getCostToHallway() else 0)
 
     override fun toString(): String {
         return "$amphipod from $location to $destination"
     }
 }
 
-fun produceEdgeList(burrow: Burrow, seenStates: MutableSet<BurrowMap> = mutableSetOf()): List<Edge<BurrowMap>> {
-    val availableMoves = burrow.getAvailableMoves()
+fun produceEdgeList(burrowMap: BurrowMap, seenStates: MutableSet<BurrowMap> = mutableSetOf(), level: Int = 0): List<Edge<BurrowMap>> {
+    val availableMoves = burrowMap.getAvailableMoves()
 
     if (availableMoves.isEmpty()) {
         return emptyList()
     }
 
     return availableMoves.flatMap { move ->
-        val newBurrow = burrow.move(move)
-        val list = mutableListOf(Edge(burrow.burrowMap, newBurrow.burrowMap, move.calculateCost()))
-        if (!seenStates.add(newBurrow.burrowMap)) {
+        val newBurrowMap = burrowMap.move(move)
+        val list = mutableListOf(Edge(burrowMap, newBurrowMap, move.calculateCost()))
+        if (!seenStates.add(newBurrowMap)) {
             return@flatMap list
         }
-        list.addAll(produceEdgeList(newBurrow, seenStates))
+        list.addAll(produceEdgeList(newBurrowMap, seenStates, level+1))
         list
     }
 }
 
-fun findPath(startingBurrow: Burrow): Int {
-    val edgeList = produceEdgeList(startingBurrow)
+fun findPath(startingBurrowMap: BurrowMap): Int {
+    val edgeList = produceEdgeList(startingBurrowMap)
     val graph = Graph(edgeList, true)
-    graph.dijkstra(startingBurrow.burrowMap)
+    graph.dijkstra(startingBurrowMap)
     val endState = sequenceOf(
-        ROOM_1_TOP to AmberAmphipod(1),
-        ROOM_1_BOTTOM to AmberAmphipod(1),
-        ROOM_2_TOP to BronzeAmphipod(1),
-        ROOM_2_BOTTOM to BronzeAmphipod(1),
-        ROOM_3_TOP to CopperAmphipod(1),
-        ROOM_3_BOTTOM to CopperAmphipod(1),
-        ROOM_4_TOP to DesertAmphipod(1),
-        ROOM_4_BOTTOM to DesertAmphipod(1),
-        HALLWAY_0 to null,
-        HALLWAY_1 to null,
-        HALLWAY_3 to null,
-        HALLWAY_5 to null,
-        HALLWAY_7 to null,
-        HALLWAY_9 to null,
-        HALLWAY_10 to null,
-    ).toMap(BurrowMap())
+        AmberAmphipod(),
+        BronzeAmphipod(),
+        CopperAmphipod(),
+        DesertAmphipod()
+    ).flatMap { amphipod ->
+        (1..startingBurrowMap.maxRoomOccupancy).map { position ->
+            Room(amphipod::class, position) to amphipod
+        }
+    }.toMap(BurrowMap(startingBurrowMap.maxRoomOccupancy))
+    Hallway.getValidPositions().forEach { endState[Hallway(it)] = null }
+
     val cost = graph.getWeightToPath(endState)
 //    graph.printPath(endState)
     return cost
 }
 
-class Burrow(val burrowMap: BurrowMap) {
+class BurrowMap(val maxRoomOccupancy: Int): LinkedHashMap<Location, Amphipod?>(), Comparable<BurrowMap> {
 
+    @Suppress("UNCHECKED_CAST")
     private fun getUnoccupiedHallwayLocations() =
-        burrowMap.filter { (location, amphipod) ->
-            amphipod == null && !location.isRoom
-        }.keys
+        this.filter { (location, amphipod) ->
+            amphipod == null && location is Hallway
+        }.keys as Set<Hallway>
 
-    private fun isPathToHallwayLocationNotBlocked(location: Location, destination: Location) =
-        (location.isTop() || burrowMap[location.getTop()] == null) &&
-            location.getBlockingLocations(destination).all { burrowMap[it] == null }
+    fun isPathToHallwayLocationNotBlocked(location: Room, destination: Hallway) =
+        (location.isTop() || location.getRoomsAbove()
+            .map { this[it] }
+            .all { it == null }
+        ) && location.getBlockingLocations(destination).all { this[it] == null }
 
-    private fun isPathToRoomNotBlocked(location: Location, destination: Location) =
-        burrowMap[destination] == null &&
-                (destination.isTop() || burrowMap[destination.getTop()] == null) &&
-                location.getBlockingLocations(destination).all { burrowMap[it] == null }
+    fun isHallwayPathToRoomNotBlocked(location: Hallway, destination: KClass<out Amphipod>): Boolean {
+        val topRoom = Room(destination, 1)
+        return this[topRoom] == null && location.getBlockingLocations(topRoom).all { this[it] == null }
+    }
 
-    private fun isBottomRoomCorrect(amphipod: Amphipod): Boolean {
-        val bottomRoomOccupant = burrowMap.getValue(amphipod.getBottomRoom())
-        return bottomRoomOccupant != null && bottomRoomOccupant::class == amphipod::class
+    fun getBottommostValidRoomOrNull(amphipodType: KClass<out Amphipod>): Int? {
+        val allPositionsInRoom = (maxRoomOccupancy downTo 1).map { Room(amphipodType, it) }
+        if (allPositionsInRoom.all { this[it] == null || it.isRoomFor(this[it]) }) {
+            return allPositionsInRoom.first { this[it] == null }.position
+        }
+        return null
     }
 
     fun getAvailableMoves(): List<Move> {
-        return getIncorrectLocations()
+        val allPossibleMoves = getIncorrectLocations()
             .flatMap { (location, amphipod) ->
-                if (location.isRoom) {
+                if (location is Room) {
                     getUnoccupiedHallwayLocations()
                         .filter { destination -> isPathToHallwayLocationNotBlocked(location, destination) }
                         .map { destination -> Move(amphipod, location, destination) }
                 } else {
-//                    // move to top room if bottom room correct and path not blocked
-                    if (isBottomRoomCorrect(amphipod) && isPathToRoomNotBlocked(location, amphipod.getTopRoom())) {
-                        listOf(Move(amphipod, location, amphipod.getTopRoom()))
-                    } else if (isPathToRoomNotBlocked(location, amphipod.getBottomRoom())) {
-                        // try to move to bottom room
-                        listOf(Move(amphipod, location, amphipod.getBottomRoom()))
+                    val bottommostValidRoom = getBottommostValidRoomOrNull(amphipod::class)
+                    if (isHallwayPathToRoomNotBlocked(location as Hallway, amphipod::class) && bottommostValidRoom != null) {
+                        listOf(Move(amphipod, location, Room(amphipod::class, bottommostValidRoom)))
                     } else {
                         emptyList()
                     }
                 }
             }
+        return if (allPossibleMoves.any { it.destination is Room }) {
+            allPossibleMoves.filter { it.destination is Room }
+        } else {
+            allPossibleMoves
+        }
     }
 
-    fun move(move: Move): Burrow {
-        val newMap = burrowMap
+    fun move(move: Move): BurrowMap {
+        return this
             .entries
-            .associateTo(BurrowMap()) { (mapLocation, mapAmphipod) ->
+            .associateTo(BurrowMap(this.maxRoomOccupancy)) { (mapLocation, mapAmphipod) ->
                 mapLocation to when (mapLocation) {
                     move.location -> null
                     move.destination -> move.amphipod
                     else -> mapAmphipod
                 }
             }
-
-        return Burrow(newMap)
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun getIncorrectLocations(): List<Entry<Location, Amphipod>> {
-        return burrowMap
+    private fun getIncorrectLocations(): List<Map.Entry<Location, Amphipod>> {
+        return this
             .entries
             .filter { (location, amphipod) ->
                 amphipod != null && (
-                    !location.isRoom || (
+                    location !is Room || (
                         !location.isRoomFor(amphipod) || // is wrong
-                        (location.isTop() && !location.getBottom().isRoomFor(burrowMap[location.getBottom()])) // is top and bottom is wrong
+                        // is not bottom and positions below are wrong
+                        (location.position != maxRoomOccupancy && location.getRoomsBelowTo(maxRoomOccupancy).any {
+                            position -> !position.isRoomFor(this[position])
+                        })
                     )
                 )
-            } as List<Entry<Location, Amphipod>>
+            } as List<Map.Entry<Location, Amphipod>>
     }
 
     companion object {
-        fun fromString(input: List<String>): Burrow {
-            val burrowMap = BurrowMap()
+        fun fromString(input: List<String>, maxRoomOccupancy: Int = 2): BurrowMap {
+            val burrowMap = Amphipod::class.sealedSubclasses.flatMapIndexed { idx, roomType ->
+                (2..maxRoomOccupancy + 1).map { line ->
+                    val amphipod = Amphipod.fromChar(input[line][(idx * 2) + 3])
+                    Room(roomType, line - 1) to amphipod
+                }
+            }.toMap(BurrowMap(maxRoomOccupancy))
 
-            burrowMap[ROOM_1_TOP] = Amphipod.fromChar(1, input[2][3])
-            burrowMap[ROOM_1_BOTTOM] = Amphipod.fromChar(2, input[3][3])
+            Hallway.getValidPositions().forEach { burrowMap[Hallway(it)] = Amphipod.fromChar(input[1][it + 1]) }
 
-            burrowMap[ROOM_2_TOP] = Amphipod.fromChar(3, input[2][5])
-            burrowMap[ROOM_2_BOTTOM] = Amphipod.fromChar(4, input[3][5])
-
-            burrowMap[ROOM_3_TOP] = Amphipod.fromChar(5, input[2][7])
-            burrowMap[ROOM_3_BOTTOM] = Amphipod.fromChar(6, input[3][7])
-
-            burrowMap[ROOM_4_TOP] = Amphipod.fromChar(7, input[2][9])
-            burrowMap[ROOM_4_BOTTOM] = Amphipod.fromChar(8, input[3][9])
-
-            Location.values()
-                .filter { it !in burrowMap }
-                .forEach { burrowMap[it] = null }
-
-            return Burrow(burrowMap)
+            return burrowMap
         }
     }
-}
 
-class BurrowMap: LinkedHashMap<Location, Amphipod?>(), Comparable<BurrowMap> {
     override fun compareTo(other: BurrowMap): Int {
         return this.toString().compareTo(other.toString())
     }
 
     fun isCorrect() =
-        this[ROOM_1_TOP] is AmberAmphipod &&
-        this[ROOM_1_BOTTOM] is AmberAmphipod &&
-        this[ROOM_2_TOP] is BronzeAmphipod &&
-        this[ROOM_2_BOTTOM] is BronzeAmphipod &&
-        this[ROOM_3_TOP] is CopperAmphipod &&
-        this[ROOM_3_BOTTOM] is CopperAmphipod &&
-        this[ROOM_4_TOP] is DesertAmphipod &&
-        this[ROOM_4_BOTTOM] is DesertAmphipod &&
-        this.values.filterNotNull().size == 8
+        this
+            .filterKeys { it is Room }
+            .all { (key, value) -> (key as Room).isRoomFor(value) }
+            && this.values.filterNotNull().size == 8
 
 
     override fun toString(): String {
-        return """
-            #############
-            #${this[HALLWAY_0]?.char ?: "."}${this[HALLWAY_1]?.char ?: "."}.${this[HALLWAY_3]?.char ?: "."}.${this[HALLWAY_5]?.char ?: "."}.${this[HALLWAY_7]?.char ?: "."}.${this[HALLWAY_9]?.char ?: "."}${this[HALLWAY_10]?.char ?: "."}#
-            ###${this[ROOM_1_TOP]?.char ?: "."}#${this[ROOM_2_TOP]?.char ?: "."}#${this[ROOM_3_TOP]?.char ?: "."}#${this[ROOM_4_TOP]?.char ?: "."}###
-              #${this[ROOM_1_BOTTOM]?.char ?: "."}#${this[ROOM_2_BOTTOM]?.char ?: "."}#${this[ROOM_3_BOTTOM]?.char ?: "."}#${this[ROOM_4_BOTTOM]?.char ?: "."}#
-              #########
-        """.trimIndent()
-    }
+        return buildString {
+            appendLine("#############")
+            append("#")
+            (0..10).forEach { append(this@BurrowMap[Hallway(it)]?.char ?: '.') }
+            appendLine("#")
+            append("##")
+            Amphipod::class.sealedSubclasses.forEach {
+                append('#')
+                append(this@BurrowMap[Room(it, 1)]?.char ?: '.')
+            }
+            appendLine("###")
 
+            (2..maxRoomOccupancy).forEach { idx ->
+                append("  ")
+                Amphipod::class.sealedSubclasses.forEach { kClass ->
+                    append('#')
+                    append(this@BurrowMap[Room(kClass, idx)]?.char ?: '.')
+                }
+                appendLine('#')
+            }
+            appendLine("  #########")
+        }
+    }
 }
 
 fun main() {
     val input = readInputLines(23)
-    val burrow = Burrow.fromString(input)
+    val burrow = BurrowMap.fromString(input)
     println("Least energy required is ${findPath(burrow)}")
+    val part2Input = readInputLines(23, "input-part2.txt")
+    val part2BurrowMap = BurrowMap.fromString(part2Input, 4)
+    println("Least energy required is ${findPath(part2BurrowMap)}")
 }
